@@ -189,8 +189,8 @@ int main()
   EncoderOutA.mode(PullUp);
   EncoderOutB.mode(PullUp);
   EncoderSwitch.mode(PullDown);
-  EncoderOutA.set_debounce_us(250); // in microseconds
-  EncoderOutB.set_debounce_us(250); // in microseconds
+  EncoderOutA.set_debounce_us(100); // in microseconds
+  EncoderOutB.set_debounce_us(100); // in microseconds
 
   // setup Interrupt Handler
   Button.rise(&PBIntHandler);
@@ -243,11 +243,11 @@ int main()
 
     // due to pull up resistor, A will always start HIGH
     EncoderOutA_State = EncoderOutA.read();
-
+    
     // if A changes state (i.e. becomes LOW), read B. 
     if (EncoderOutA_State != EncoderOutA_LastState) {
       EncoderOutB_State = EncoderOutB.read();
-      ctr += 1; 
+
       // if A and B are opposite, then it's CW 
       if (EncoderOutA_State != EncoderOutB_State) {
         rotation_value += 1;
