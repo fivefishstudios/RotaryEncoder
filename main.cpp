@@ -2,6 +2,7 @@
   Demo program combining Multiplexed 7-segment LED Display and LCD Display.
   Push-button Switch input via Interrupt subroutines.
   + playing with Rotary Encoder
+  + add 10K pull resistor on OutA and OutB on breadboard
 */
 #include "mbed.h"
 #include "LCD_DISCO_F429ZI.h"
@@ -186,11 +187,11 @@ int main()
   // pc.baud(115200);
 
   // setup Rotary Encoder
-  EncoderOutA.mode(PullUp);
-  EncoderOutB.mode(PullUp);
+  // EncoderOutA.mode(PullUp);
+  // EncoderOutB.mode(PullUp);
   EncoderSwitch.mode(PullDown);
-  EncoderOutA.set_debounce_us(100); // in microseconds
-  EncoderOutB.set_debounce_us(100); // in microseconds
+  EncoderOutA.set_debounce_us(250); // in microseconds
+  EncoderOutB.set_debounce_us(250); // in microseconds
 
   // setup Interrupt Handler
   Button.rise(&PBIntHandler);
@@ -218,6 +219,8 @@ int main()
   // start of main loop
   while (true)
   {
+    ctr += 1;
+
     // Display_Number(rotation_value, 100); // Number to display on 7-segment LED, Duration_ms
 
     // Check Rotary Encoder status (switch + rotation)
@@ -243,10 +246,14 @@ int main()
 
     // due to pull up resistor, A will always start HIGH
     EncoderOutA_State = EncoderOutA.read();
-    
+    // EncoderOutB_State = EncoderOutB.read();
     // if A changes state (i.e. becomes LOW), read B. 
     if (EncoderOutA_State != EncoderOutA_LastState) {
       EncoderOutB_State = EncoderOutB.read();
+
+      pc.printf("%d. Out A: %d \n", ctr, EncoderOutA_State);
+      pc.printf("%d. Out B: %d \n", ctr, EncoderOutB_State);    
+      pc.printf("-------------\n");    
 
       // if A and B are opposite, then it's CW 
       if (EncoderOutA_State != EncoderOutB_State) {
@@ -259,18 +266,17 @@ int main()
         rotation_value -= 1;
         pc.printf("%d. Rotated CCW %d \n\n", ctr, rotation_value);
       }
-      
-      pc.printf("%d. Out A: %d \n", ctr, EncoderOutA_State);
-      pc.printf("%d. Out B: %d \n", ctr, EncoderOutB_State);    
-      pc.printf("-------------\n");
-
-      // display on LCD
-      sprintf(buf, "Value %03d ", rotation_value);
-      lcd.SetTextColor(LCD_COLOR_GREEN);
-      lcd.DisplayStringAt(10, 70, (uint8_t *)buf, CENTER_MODE);
-					
       // update last states
       EncoderOutA_LastState = EncoderOutA_State;
+
+
+      // display on LCD
+      lcd.SetFont(&Grotesk16x32);
+      lcd.SetTextColor(LCD_COLOR_GREEN);
+      lcd.DisplayStringAt(0, 50, (uint8_t *)"Rotary Encoder", CENTER_MODE);
+      sprintf(buf, "%03d", rotation_value);
+      lcd.DisplayStringAt(0, 100, (uint8_t *)buf, CENTER_MODE);
+					
     }
 
   }
